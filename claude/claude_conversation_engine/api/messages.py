@@ -1,6 +1,6 @@
 from anthropic import Anthropic
-from core_services.claude_conversation_engine.api.history import HistoryHandler, USER_ROLE, ASSISTANT_ROLE
-from core_services.claude_conversation_engine.usage_tracking.tracker import UsageTracker
+from claude_conversation_engine.api.history import HistoryHandler, USER_ROLE, ASSISTANT_ROLE
+from claude_conversation_engine.usage_tracking.tracker import UsageTracker
 
 
 DEFAULT_MODEL = "claude-haiku-4-5-20251001"
@@ -42,7 +42,6 @@ class MessageHandler:
             max_tokens=self.max_tokens,
             system=system_prompt if system_prompt is not None else self.system_prompt,
             messages=self.history.get_messages(),
-            stop_sequences=["\n\n"],
         ) as stream:
             for text in stream.text_stream:
                 print(text, end="", flush=True)

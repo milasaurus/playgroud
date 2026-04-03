@@ -1,8 +1,8 @@
 from client import client
-from core_services.prompt_eval.models import PromptVersion, EvalCase
-from core_services.prompt_eval.api.runner import EvalRunner
-from core_services.prompt_eval.api.evaluator import Evaluator
-from core_services.prompt_eval.api.report import EvalReport
+from claude_prompt_eval.models import PromptVersion, EvalCase
+from claude_prompt_eval.api.runner import EvalRunner
+from claude_prompt_eval.api.evaluator import Evaluator
+from claude_prompt_eval.api.report import EvalReport
 
 
 def collect_versions():

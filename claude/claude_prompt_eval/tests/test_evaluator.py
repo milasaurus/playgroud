@@ -1,7 +1,7 @@
 import json
 from unittest.mock import MagicMock
-from core_services.prompt_eval.models import EvalResult, USER_ROLE
-from core_services.prompt_eval.api.evaluator import Evaluator, JUDGE_SYSTEM_PROMPT
+from claude_prompt_eval.models import EvalResult, USER_ROLE
+from claude_prompt_eval.api.evaluator import Evaluator, JUDGE_SYSTEM_PROMPT
 
 TEST_VERSION = "v1"
 TEST_CASE = "greeting"

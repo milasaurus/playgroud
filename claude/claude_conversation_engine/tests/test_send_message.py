@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock, patch
-from core_services.claude_conversation_engine.api.messages import MessageHandler
-from core_services.claude_conversation_engine.usage_tracking.tracker import UsageTracker
-from core_services.claude_conversation_engine.services.send_message import run_chat, EXIT_COMMAND
+from claude_conversation_engine.api.messages import MessageHandler
+from claude_conversation_engine.usage_tracking.tracker import UsageTracker
+from claude_conversation_engine.services.send_message import run_chat, EXIT_COMMAND
 
 
 def make_mock_handler(responses):

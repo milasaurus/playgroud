@@ -1,7 +1,7 @@
 import json
 import re
 from anthropic import Anthropic
-from core_services.prompt_eval.models import (
+from claude_prompt_eval.models import (
     EvalResult, ScoreResult, USER_ROLE, DEFAULT_MODEL, DEFAULT_MAX_TOKENS
 )
 

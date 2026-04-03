@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock, patch
-from core_services.claude_conversation_engine.api.history import HistoryHandler, USER_ROLE, ASSISTANT_ROLE
-from core_services.claude_conversation_engine.api.messages import MessageHandler, DEFAULT_MODEL, DEFAULT_SYSTEM_PROMPT
-from core_services.claude_conversation_engine.usage_tracking.tracker import UsageTracker
+from claude_conversation_engine.api.history import HistoryHandler, USER_ROLE, ASSISTANT_ROLE
+from claude_conversation_engine.api.messages import MessageHandler, DEFAULT_MODEL, DEFAULT_SYSTEM_PROMPT
+from claude_conversation_engine.usage_tracking.tracker import UsageTracker
 
 DEFAULT_MAX_TOKENS = 1024
 CUSTOM_MODEL = "claude-haiku-4-5-20251001"
@@ -128,7 +128,6 @@ def test_send_uses_default_system_prompt(mock_print):
         max_tokens=DEFAULT_MAX_TOKENS,
         system=DEFAULT_SYSTEM_PROMPT,
         messages=[{"role": USER_ROLE, "content": content}],
-        stop_sequences=["\n\n"],
     )
 
 
@@ -148,7 +147,6 @@ def test_send_with_custom_system_prompt_in_init(mock_print):
         max_tokens=DEFAULT_MAX_TOKENS,
         system=CUSTOM_SYSTEM_PROMPT,
         messages=[{"role": USER_ROLE, "content": content}],
-        stop_sequences=["\n\n"],
     )
 
 
@@ -169,5 +167,4 @@ def test_send_with_system_prompt_override(mock_print):
         max_tokens=DEFAULT_MAX_TOKENS,
         system=override_prompt,
         messages=[{"role": USER_ROLE, "content": content}],
-        stop_sequences=["\n\n"],
     )
