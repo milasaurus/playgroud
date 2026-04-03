@@ -1,8 +1,8 @@
 from unittest.mock import MagicMock
-from core_services.prompt_eval.models import (
+from claude_prompt_eval.models import (
     PromptVersion, EvalCase, USER_ROLE, DEFAULT_MODEL, DEFAULT_MAX_TOKENS
 )
-from core_services.prompt_eval.api.runner import EvalRunner
+from claude_prompt_eval.api.runner import EvalRunner
 
 TEST_VERSION_NAME = "v1"
 TEST_SYSTEM_PROMPT = "You are helpful."

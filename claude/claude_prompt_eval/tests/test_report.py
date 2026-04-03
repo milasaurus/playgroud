@@ -1,5 +1,5 @@
-from core_services.prompt_eval.models import EvalResult, ScoreResult
-from core_services.prompt_eval.api.report import EvalReport
+from claude_prompt_eval.models import EvalResult, ScoreResult
+from claude_prompt_eval.api.report import EvalReport
 
 
 def make_eval_result(version_name="v1", test_name="greeting"):

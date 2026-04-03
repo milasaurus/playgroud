@@ -1,4 +1,4 @@
-from core_services.claude_conversation_engine.api.history import HistoryHandler, USER_ROLE, ASSISTANT_ROLE
+from claude_conversation_engine.api.history import HistoryHandler, USER_ROLE, ASSISTANT_ROLE
 
 
 def test_add_stores_message():

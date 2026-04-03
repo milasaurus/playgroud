@@ -1,5 +1,5 @@
 from anthropic import Anthropic
-from core_services.prompt_eval.models import (
+from claude_prompt_eval.models import (
     PromptVersion, EvalCase, EvalResult, USER_ROLE
 )
 

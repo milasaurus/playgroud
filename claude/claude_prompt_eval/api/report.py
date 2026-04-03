@@ -1,5 +1,5 @@
-from core_services.prompt_eval.models import EvalResult, ScoreResult
-from core_services.prompt_eval.formatter import (
+from claude_prompt_eval.models import EvalResult, ScoreResult
+from claude_prompt_eval.formatter import (
     format_header, format_prompts, format_test_case,
     format_result, format_rankings,
 )

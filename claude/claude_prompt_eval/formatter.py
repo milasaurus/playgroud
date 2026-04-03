@@ -1,4 +1,4 @@
-from core_services.prompt_eval.models import EvalResult, ScoreResult
+from claude_prompt_eval.models import EvalResult, ScoreResult
 
 SEPARATOR = "=" * 60
 DIVIDER = "-" * 60
