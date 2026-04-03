@@ -12,9 +12,9 @@ def run_chat(handler, tracker, input_fn=input, print_fn=print):
             print_fn(tracker.report())
             break
 
-        response = handler.send(user_input)
-        print_fn(f"\nClaude: {response}")
-        print_fn(f"\n(Type '{EXIT_COMMAND}' to exit)")
+        print("\nClaude: ", end="", flush=True)
+        handler.send(user_input)
+        print_fn(f"(Type '{EXIT_COMMAND}' to exit)")
 
 
 if __name__ == "__main__":
