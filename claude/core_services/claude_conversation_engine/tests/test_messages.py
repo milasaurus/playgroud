@@ -127,7 +127,8 @@ def test_send_uses_default_system_prompt(mock_print):
         model=DEFAULT_MODEL,
         max_tokens=DEFAULT_MAX_TOKENS,
         system=DEFAULT_SYSTEM_PROMPT,
-        messages=[{"role": USER_ROLE, "content": content}]
+        messages=[{"role": USER_ROLE, "content": content}],
+        stop_sequences=["\n\n"],
     )
 
 
@@ -146,7 +147,8 @@ def test_send_with_custom_system_prompt_in_init(mock_print):
         model=DEFAULT_MODEL,
         max_tokens=DEFAULT_MAX_TOKENS,
         system=CUSTOM_SYSTEM_PROMPT,
-        messages=[{"role": USER_ROLE, "content": content}]
+        messages=[{"role": USER_ROLE, "content": content}],
+        stop_sequences=["\n\n"],
     )
 
 
@@ -166,5 +168,6 @@ def test_send_with_system_prompt_override(mock_print):
         model=DEFAULT_MODEL,
         max_tokens=DEFAULT_MAX_TOKENS,
         system=override_prompt,
-        messages=[{"role": USER_ROLE, "content": content}]
+        messages=[{"role": USER_ROLE, "content": content}],
+        stop_sequences=["\n\n"],
     )
