@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
-from chatbot.api.history import HistoryHandler, USER_ROLE, ASSISTANT_ROLE
-from chatbot.api.messages import MessageHandler
-from chatbot.usage_tracking.tracker import UsageTracker
+from core_services.chat.api.history import HistoryHandler, USER_ROLE, ASSISTANT_ROLE
+from core_services.chat.api.messages import MessageHandler
+from core_services.chat.usage_tracking.tracker import UsageTracker
 
 DEFAULT_MODEL = "claude-haiku-4-5-20251001"
 DEFAULT_MAX_TOKENS = 1024

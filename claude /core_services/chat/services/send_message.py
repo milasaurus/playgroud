@@ -1,7 +1,7 @@
 from client import client
-from chatbot.api.history import HistoryHandler
-from chatbot.api.messages import MessageHandler
-from chatbot.usage_tracking.tracker import UsageTracker
+from core_services.chat.api.history import HistoryHandler
+from core_services.chat.api.messages import MessageHandler
+from core_services.chat.usage_tracking.tracker import UsageTracker
 
 EXIT_COMMAND = "quit"
 

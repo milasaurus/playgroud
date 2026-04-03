@@ -1,4 +1,4 @@
-from chatbot.api.history import HistoryHandler, USER_ROLE, ASSISTANT_ROLE
+from core_services.chat.api.history import HistoryHandler, USER_ROLE, ASSISTANT_ROLE
 
 
 def test_add_stores_message():

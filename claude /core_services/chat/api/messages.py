@@ -1,6 +1,6 @@
 from anthropic import Anthropic
-from chatbot.api.history import HistoryHandler, USER_ROLE, ASSISTANT_ROLE
-from chatbot.usage_tracking.tracker import UsageTracker
+from core_services.chat.api.history import HistoryHandler, USER_ROLE, ASSISTANT_ROLE
+from core_services.chat.usage_tracking.tracker import UsageTracker
 
 
 class MessageHandler:
