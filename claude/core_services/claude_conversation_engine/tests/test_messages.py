@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
-from core_services.chat.api.history import HistoryHandler, USER_ROLE, ASSISTANT_ROLE
-from core_services.chat.api.messages import MessageHandler, DEFAULT_MODEL, DEFAULT_SYSTEM_PROMPT
-from core_services.chat.usage_tracking.tracker import UsageTracker
+from core_services.claude_conversation_engine.api.history import HistoryHandler, USER_ROLE, ASSISTANT_ROLE
+from core_services.claude_conversation_engine.api.messages import MessageHandler, DEFAULT_MODEL, DEFAULT_SYSTEM_PROMPT
+from core_services.claude_conversation_engine.usage_tracking.tracker import UsageTracker
 
 DEFAULT_MAX_TOKENS = 1024
 CUSTOM_MODEL = "claude-haiku-4-5-20251001"
