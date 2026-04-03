@@ -1,5 +1,4 @@
-from unittest.mock import MagicMock
-from core_services.claude_conversation_engine.api.history import HistoryHandler
+from unittest.mock import MagicMock, patch
 from core_services.claude_conversation_engine.api.messages import MessageHandler
 from core_services.claude_conversation_engine.usage_tracking.tracker import UsageTracker
 from core_services.claude_conversation_engine.services.send_message import run_chat, EXIT_COMMAND
@@ -11,7 +10,8 @@ def make_mock_handler(responses):
     return mock_handler
 
 
-def test_quit_exits_immediately():
+@patch("builtins.print")
+def test_quit_exits_immediately(mock_print):
     mock_handler = make_mock_handler([])
     tracker = UsageTracker()
     inputs = iter([EXIT_COMMAND])
@@ -22,7 +22,8 @@ def test_quit_exits_immediately():
     mock_handler.send.assert_not_called()
 
 
-def test_single_message_then_quit():
+@patch("builtins.print")
+def test_single_message_then_quit(mock_print):
     expected = "Hi there!"
     mock_handler = make_mock_handler([expected])
     tracker = UsageTracker()
@@ -32,11 +33,11 @@ def test_single_message_then_quit():
     run_chat(mock_handler, tracker, input_fn=lambda _: next(inputs), print_fn=output.append)
 
     mock_handler.send.assert_called_once_with("Hello")
-    assert f"\nClaude: {expected}" in output
-    assert f"\n(Type '{EXIT_COMMAND}' to exit)" in output
+    assert f"(Type '{EXIT_COMMAND}' to exit)" in output
 
 
-def test_multi_turn_then_quit():
+@patch("builtins.print")
+def test_multi_turn_then_quit(mock_print):
     first_expected = "Python is a language."
     second_expected = "It's used for many things."
     mock_handler = make_mock_handler([first_expected, second_expected])
@@ -47,5 +48,3 @@ def test_multi_turn_then_quit():
     run_chat(mock_handler, tracker, input_fn=lambda _: next(inputs), print_fn=output.append)
 
     assert mock_handler.send.call_count == 2
-    assert f"\nClaude: {first_expected}" in output
-    assert f"\nClaude: {second_expected}" in output

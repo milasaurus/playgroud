@@ -33,16 +33,27 @@ class MessageHandler:
     def send(self, content: str, system_prompt: str = None) -> str:
         self.history.add(USER_ROLE, content)
 
-        message = self.client.messages.create(
+        response_text = ""
+        input_tokens = 0
+        output_tokens = 0
+
+        with self.client.messages.stream(
             model=self.model,
             max_tokens=self.max_tokens,
             system=system_prompt if system_prompt is not None else self.system_prompt,
-            messages=self.history.get_messages()
-        )
+            messages=self.history.get_messages(),
+            stop_sequences=["\n\n"],
+        ) as stream:
+            for text in stream.text_stream:
+                print(text, end="", flush=True)
+                response_text += text
 
-        self.tracker.record(message.usage.input_tokens, message.usage.output_tokens)
+            final_message = stream.get_final_message()
+            input_tokens = final_message.usage.input_tokens
+            output_tokens = final_message.usage.output_tokens
 
-        response_text = message.content[0].text
+        print()
+        self.tracker.record(input_tokens, output_tokens)
         self.history.add(ASSISTANT_ROLE, response_text)
 
         return response_text

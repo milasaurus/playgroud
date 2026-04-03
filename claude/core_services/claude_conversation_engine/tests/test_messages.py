@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from core_services.claude_conversation_engine.api.history import HistoryHandler, USER_ROLE, ASSISTANT_ROLE
 from core_services.claude_conversation_engine.api.messages import MessageHandler, DEFAULT_MODEL, DEFAULT_SYSTEM_PROMPT
 from core_services.claude_conversation_engine.usage_tracking.tracker import UsageTracker
@@ -11,13 +11,17 @@ CUSTOM_SYSTEM_PROMPT = "You are a math tutor."
 
 def make_mock_client(text, input_tokens=10, output_tokens=5):
     mock_client = MagicMock()
-    mock_client.messages.create.return_value.content = [MagicMock(text=text)]
-    mock_client.messages.create.return_value.usage.input_tokens = input_tokens
-    mock_client.messages.create.return_value.usage.output_tokens = output_tokens
+    mock_stream = MagicMock()
+    mock_stream.text_stream = list(text)
+    mock_stream.get_final_message.return_value.usage.input_tokens = input_tokens
+    mock_stream.get_final_message.return_value.usage.output_tokens = output_tokens
+    mock_client.messages.stream.return_value.__enter__ = MagicMock(return_value=mock_stream)
+    mock_client.messages.stream.return_value.__exit__ = MagicMock(return_value=False)
     return mock_client
 
 
-def test_send_returns_response_text():
+@patch("builtins.print")
+def test_send_returns_response_text(mock_print):
     content = "Hello, Claudette!"
     expected = "Hello! How can I help you?"
     mock_client = make_mock_client(expected)
@@ -34,7 +38,8 @@ def test_send_returns_response_text():
     ]
 
 
-def test_send_with_custom_model_and_max_tokens():
+@patch("builtins.print")
+def test_send_with_custom_model_and_max_tokens(mock_print):
     content = "Hi"
     expected = "Response"
     mock_client = make_mock_client(expected)
@@ -51,7 +56,8 @@ def test_send_with_custom_model_and_max_tokens():
     ]
 
 
-def test_multi_turn_conversation():
+@patch("builtins.print")
+def test_multi_turn_conversation(mock_print):
     first_content = "What is Python?"
     first_expected = "Python is a programming language."
     second_content = "What is it used for?"
@@ -67,10 +73,11 @@ def test_multi_turn_conversation():
     first_result = handler.send(first_content)
     assert first_result == first_expected
 
-    # Second turn — mock a new response
-    mock_client.messages.create.return_value.content = [MagicMock(text=second_expected)]
-    mock_client.messages.create.return_value.usage.input_tokens = 30
-    mock_client.messages.create.return_value.usage.output_tokens = 12
+    # Second turn — update mock for new response
+    mock_stream = mock_client.messages.stream.return_value.__enter__.return_value
+    mock_stream.text_stream = list(second_expected)
+    mock_stream.get_final_message.return_value.usage.input_tokens = 30
+    mock_stream.get_final_message.return_value.usage.output_tokens = 12
     second_result = handler.send(second_content)
     assert second_result == second_expected
 
@@ -82,10 +89,11 @@ def test_multi_turn_conversation():
         {"role": ASSISTANT_ROLE, "content": second_expected},
     ]
 
-    assert mock_client.messages.create.call_count == 2
+    assert mock_client.messages.stream.call_count == 2
 
 
-def test_send_tracks_token_usage():
+@patch("builtins.print")
+def test_send_tracks_token_usage(mock_print):
     content = "Hello"
     expected = "Hi there!"
     input_tokens = 20
@@ -104,7 +112,8 @@ def test_send_tracks_token_usage():
     assert totals["num_turns"] == 1
 
 
-def test_send_uses_default_system_prompt():
+@patch("builtins.print")
+def test_send_uses_default_system_prompt(mock_print):
     content = "Help me"
     expected = "What do you need help with?"
     mock_client = make_mock_client(expected)
@@ -114,7 +123,7 @@ def test_send_uses_default_system_prompt():
     handler = MessageHandler(mock_client, history, tracker)
     handler.send(content)
 
-    mock_client.messages.create.assert_called_once_with(
+    mock_client.messages.stream.assert_called_once_with(
         model=DEFAULT_MODEL,
         max_tokens=DEFAULT_MAX_TOKENS,
         system=DEFAULT_SYSTEM_PROMPT,
@@ -122,7 +131,8 @@ def test_send_uses_default_system_prompt():
     )
 
 
-def test_send_with_custom_system_prompt_in_init():
+@patch("builtins.print")
+def test_send_with_custom_system_prompt_in_init(mock_print):
     content = "What is 2+2?"
     expected = "Think about counting."
     mock_client = make_mock_client(expected)
@@ -132,7 +142,7 @@ def test_send_with_custom_system_prompt_in_init():
     handler = MessageHandler(mock_client, history, tracker, system_prompt=CUSTOM_SYSTEM_PROMPT)
     handler.send(content)
 
-    mock_client.messages.create.assert_called_once_with(
+    mock_client.messages.stream.assert_called_once_with(
         model=DEFAULT_MODEL,
         max_tokens=DEFAULT_MAX_TOKENS,
         system=CUSTOM_SYSTEM_PROMPT,
@@ -140,7 +150,8 @@ def test_send_with_custom_system_prompt_in_init():
     )
 
 
-def test_send_with_system_prompt_override():
+@patch("builtins.print")
+def test_send_with_system_prompt_override(mock_print):
     content = "Translate hello"
     expected = "Hola"
     override_prompt = "You are a translator."
@@ -151,7 +162,7 @@ def test_send_with_system_prompt_override():
     handler = MessageHandler(mock_client, history, tracker)
     handler.send(content, system_prompt=override_prompt)
 
-    mock_client.messages.create.assert_called_once_with(
+    mock_client.messages.stream.assert_called_once_with(
         model=DEFAULT_MODEL,
         max_tokens=DEFAULT_MAX_TOKENS,
         system=override_prompt,
