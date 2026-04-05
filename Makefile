@@ -1,3 +1,10 @@
+# ── Setup ────────────────────────────────────────────────────────────────────
+
+setup:
+	python3 -m venv venv && source venv/bin/activate && pip install anthropic python-dotenv pytest
+
+# ── Run ──────────────────────────────────────────────────────────────────────
+
 chat:
 	source venv/bin/activate && python -m claude_conversation_engine.services.send_message
 
@@ -7,17 +14,19 @@ prompt:
 prompt-verbose:
 	source venv/bin/activate && python -m claude_prompt_eval.services.evaluation --verbose
 
+coder:
+	source venv/bin/activate && python code-editing-agent/agent.py
+
+# ── Test ─────────────────────────────────────────────────────────────────────
+
 test:
-	source venv/bin/activate && python -m pytest claude_conversation_engine/ claude_prompt_eval/ -v
+	source venv/bin/activate && python -m pytest claude_conversation_engine/ claude_prompt_eval/ code-editing-agent/tests/ -v
 
 test-chat:
-	source venv/bin/activate && python -m pytest core_services/claude_conversation_engine/tests/ -v
+	source venv/bin/activate && python -m pytest claude_conversation_engine/tests/ -v
 
 test-eval:
 	source venv/bin/activate && python -m pytest claude_prompt_eval/tests/ -v
 
-coder:
-	source venv/bin/activate && python code-editing-agent/agent.py
-
-setup:
-	python3 -m venv venv && source venv/bin/activate && pip install anthropic python-dotenv pytest
+test-coder:
+	source venv/bin/activate && python -m pytest code-editing-agent/tests/ -v
