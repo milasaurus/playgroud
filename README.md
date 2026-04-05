@@ -7,13 +7,21 @@ A collection of projects exploring agentic workflows and prompt engineering with
 | Directory | Description |
 |-----------|-------------|
 | `claude_conversation_engine/` | Terminal chat with Claude using streaming, history tracking, and token usage reporting |
-| `claude_prompt_eval/` | Evaluate prompts by auto generating user message cases and prompt grading with Claude |
-| `code-editing-agent/` | Terminal coding agent that gives Claude tools to read, list, and edit files |
+| `claude_prompt_eval/` | Auto generate test cases for a prompt, run them, and grade responses using Claude |
+| `code_editing_agent/` | Terminal based agent that gives Claude tools to read, list, and edit files |
 
-## Setup
+## Getting Started
 
 ```bash
+git clone https://github.com/milasaurus/playground.git
+cd playground
 make setup
+```
+
+Create a `.env` file in the project root with your Anthropic API key:
+
+```bash
+ANTHROPIC_API_KEY=your-api-key-here
 ```
 
 ## Commands

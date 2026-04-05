@@ -38,11 +38,11 @@ Evaluates system prompts by auto-generating test cases, running them, and gradin
 
 Data flows through dataclasses in `models.py`: `PromptVersion` -> `EvalCase` -> `EvalResult` -> `ScoreResult` -> `GradeReport`.
 
-### code-editing-agent/
+### code_editing_agent/
 Standalone single-file agent (`agent.py`) with its own CLAUDE.md. Not connected to the other modules. Uses a tool-use loop: Claude calls `read_file`, `list_files`, or `edit_file` tools, agent executes them and feeds results back until Claude responds with text only.
 
 ### Shared
-`client.py` at the repo root creates a shared `Anthropic` client (used by conversation engine and prompt eval, but **not** by code-editing-agent which creates its own).
+`client.py` at the repo root creates a shared `Anthropic` client (used by conversation engine and prompt eval, but **not** by code_editing_agent which creates its own).
 
 ## Code Change Philosophy
 
