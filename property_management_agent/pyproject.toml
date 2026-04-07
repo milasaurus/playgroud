@@ -1,0 +1,10 @@
+[project]
+name = "property-management-agent"
+version = "0.1.0"
+description = "Agentic tool-calling system to manage inbox, calendar, and property listings"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "anthropic>=0.91.0",
+    "pytest>=9.0.3",
+]

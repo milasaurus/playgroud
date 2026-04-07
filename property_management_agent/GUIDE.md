@@ -1,0 +1,105 @@
+# Testing Guide
+
+## Setup
+
+    make setup
+
+This runs `uv sync` to create a virtual environment and install dependencies.
+
+You'll need an `ANTHROPIC_API_KEY` environment variable set:
+
+    export ANTHROPIC_API_KEY=sk-ant-...
+
+## Interactive CLI
+
+Start the agent with pre-populated data:
+
+    make run-seeded
+
+Or start with empty/existing databases:
+
+    make run
+
+To seed databases without starting the CLI:
+
+    make seed
+
+This creates 15 listings, 12 calendar events, and 20 inbox messages.
+
+### Example prompts to try
+
+**Listings queries:**
+
+```
+You: What 2 bedroom apartments do you have available below $3000?
+You: Show me all listings
+You: Create a listing for a 3BR house at 500 Elm Street for $3200/month with 2 bathrooms
+You: Delete the listing at 500 Elm Street
+```
+
+**Calendar queries:**
+
+```
+You: What's my schedule for tomorrow?
+You: Schedule a viewing at 123 Oak Street tomorrow at 4 PM with tenant@example.com
+You: Move my 4 PM appointment tomorrow to 5 PM
+You: Cancel the showing with sarah.jones@example.com
+```
+
+**Inbox queries:**
+
+```
+You: Show me all my emails
+You: Send an email to tenant@example.com with subject "Lease Renewal" saying their lease is up next month
+You: Search my inbox for emails about maintenance
+You: What did priya.patel@example.com ask about?
+```
+
+**Multi-step requests (tests the tool chaining):**
+
+```
+You: Find all 2BR apartments under $3000 and send the list to customer@example.com
+You: Check if I have any showings tomorrow and list the addresses
+```
+
+### Multi-turn conversation
+
+The agent remembers prior context within a session:
+
+```
+You: What listings do I have?
+Agent: [lists all properties]
+
+You: Delete the one on Oak Street
+Agent: [finds and deletes it — knows "the one" from prior turn]
+```
+
+## API CLI
+
+For one-shot calls matching the `api.py` interface (once `api.py` is wired up):
+
+    make api-query QUERY="What's my schedule for tomorrow?"
+
+    make api-email SENDER="customer@example.com" SUBJECT="Apartment inquiry" BODY="Do you have any 2BR apartments under 3000?"
+
+## Running tests
+
+    make test          # Tool unit tests (no API calls, fast)
+    make test-e2e      # End-to-end tests (requires API key, hits Claude)
+    make test-all      # Everything
+
+## Agent limits
+
+The agent has two safety limits to prevent runaway loops:
+
+- **Depth limit (`MAX_ITERATIONS=4`):** Maximum LLM call -> tool use cycles per request
+- **Tool call limit (`MAX_TOOL_CALLS=8`):** Maximum total tool executions per request
+
+If either limit is hit, the agent returns whatever response it has so far. These limits mean it won't handle overly complex compound requests like "adjust all listings, reschedule all showings, and notify everyone."
+
+## Notes
+
+- The agent uses `claude-haiku-4-5` with extended thinking enabled
+- Databases are SQLite files created in the working directory (`inbox.db`, `calendar.db`, `listings.db`)
+- Test databases use separate files (`test_*.db`) and are wiped between runs
+- Seed data includes realistic contacts — use those emails in prompts for best results

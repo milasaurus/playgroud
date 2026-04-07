@@ -1,0 +1,4 @@
+# Managed by uv — pyproject.toml is the source of truth.
+# This file exists for compatibility with pip-based workflows.
+anthropic>=0.91.0
+pytest>=9.0.3

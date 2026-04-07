@@ -9,6 +9,7 @@ A collection of projects exploring agentic workflows and prompt engineering with
 | `claude_conversation_engine/` | Terminal chat with Claude using streaming, history tracking, and token usage reporting |
 | `claude_prompt_eval/` | Auto generate test cases for a prompt, run them, and grade responses using Claude |
 | `code_editing_agent/` | Terminal based agent that gives Claude tools to read, list, and edit files |
+| `property_management_agent/` | Agentic tool-calling system that manages inbox, calendar, and property listings for a real estate solopreneur |
 
 ## Getting Started
 
