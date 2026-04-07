@@ -17,6 +17,11 @@ prompt-verbose:
 coder:
 	source venv/bin/activate && python code_editing_agent/agent.py
 
+# ── Property Management Agent (uses uv, not the root venv) ──────────────────
+
+property-agent:
+	$(MAKE) -C property_management_agent run
+
 # ── Test ─────────────────────────────────────────────────────────────────────
 
 test:
@@ -30,3 +35,6 @@ test-eval:
 
 test-coder:
 	source venv/bin/activate && python -m pytest code_editing_agent/tests/ -v
+
+test-property-agent:
+	$(MAKE) -C property_management_agent test

@@ -28,9 +28,10 @@ ANTHROPIC_API_KEY=your-api-key-here
 ## Commands
 
 ```bash
-make chat               # Run the conversation engine
-make prompt             # Run prompt eval
-make prompt-verbose     # Run prompt eval with full response details
-make coder              # Run the code-editing agent
-make test               # Run all tests
+make chat                  # Run the conversation engine
+make prompt                # Run prompt eval
+make prompt-verbose        # Run prompt eval with full response details
+make coder                 # Run the code-editing agent
+make property-agent        # Run the property management agent
+make test                  # Run all tests
 ```

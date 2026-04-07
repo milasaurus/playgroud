@@ -6,7 +6,7 @@ An agentic tool-calling system that helps a real estate solopreneur manage their
 
 ```
 agent.py            — Agent class: tool-use loop with streaming + extended thinking
-api.py              — Public API: process_email() and process_query() (WIP)
+api.py              — Public API: process_email() and process_query()
 main.py             — Interactive CLI entry point
 seed_data.py        — Populates databases with sample data for testing
 
@@ -34,27 +34,18 @@ tests/
 
     make setup                 # Install dependencies via uv
     export ANTHROPIC_API_KEY=sk-ant-...
-    make run-seeded            # Seed sample data + start interactive CLI
-
-Or without sample data:
-
-    make run                   # Start with empty/existing databases
+    make run                   # Seed data + start interactive CLI
 
 ## Commands
 
     make setup                 # Install dependencies
-    make run                   # Start interactive CLI
-    make run-seeded            # Seed databases + start interactive CLI
+    make run                   # Seed databases + start interactive CLI
     make seed                  # Seed databases only
-    make api-query QUERY="..." # Run a one-shot query via api.py
-    make api-email SENDER="..." SUBJECT="..." BODY="..."
-    make test                  # Run tool unit tests
-    make test-e2e              # Run end-to-end tests
-    make test-all              # Run all tests
+    make test                  # Run all tests (unit + e2e)
 
 ## How it works
 
-1. User sends a message (via CLI or `api.py`)
+1. User sends a message via the interactive CLI
 2. The Agent sends the message + tool definitions to Claude with extended thinking enabled
 3. If Claude responds with `tool_use` blocks, the Agent executes each tool and feeds results back
 4. Repeats until Claude responds with text only, or hits safety limits

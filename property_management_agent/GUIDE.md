@@ -12,11 +12,7 @@ You'll need an `ANTHROPIC_API_KEY` environment variable set:
 
 ## Interactive CLI
 
-Start the agent with pre-populated data:
-
-    make run-seeded
-
-Or start with empty/existing databases:
+Start the agent (seeds databases automatically):
 
     make run
 
@@ -24,7 +20,7 @@ To seed databases without starting the CLI:
 
     make seed
 
-This creates 15 listings, 12 calendar events, and 20 inbox messages.
+Seeding creates 15 listings, 12 calendar events, and 20 inbox messages.
 
 ### Example prompts to try
 
@@ -74,19 +70,9 @@ You: Delete the one on Oak Street
 Agent: [finds and deletes it — knows "the one" from prior turn]
 ```
 
-## API CLI
-
-For one-shot calls matching the `api.py` interface (once `api.py` is wired up):
-
-    make api-query QUERY="What's my schedule for tomorrow?"
-
-    make api-email SENDER="customer@example.com" SUBJECT="Apartment inquiry" BODY="Do you have any 2BR apartments under 3000?"
-
 ## Running tests
 
-    make test          # Tool unit tests (no API calls, fast)
-    make test-e2e      # End-to-end tests (requires API key, hits Claude)
-    make test-all      # Everything
+    make test          # All tests (unit + e2e, requires API key)
 
 ## Agent limits
 
