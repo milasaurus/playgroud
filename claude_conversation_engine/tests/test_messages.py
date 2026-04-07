@@ -3,9 +3,10 @@ import pytest
 from unittest.mock import MagicMock, patch
 from claude_conversation_engine.api.history import HistoryHandler, USER_ROLE, ASSISTANT_ROLE
 from claude_conversation_engine.api.messages import (
-    MessageHandler, ImageHelper, DEFAULT_MODEL, DEFAULT_SYSTEM_PROMPT,
-    DEFAULT_MAX_TOKENS, DEFAULT_THINKING_BUDGET, MAX_IMAGE_SIZE_BYTES,
+    MessageHandler, DEFAULT_MODEL, DEFAULT_SYSTEM_PROMPT,
+    DEFAULT_MAX_TOKENS, DEFAULT_THINKING_BUDGET,
 )
+from claude_conversation_engine.helpers.image_helper import ImageHelper, MAX_IMAGE_SIZE_BYTES
 from claude_conversation_engine.usage_tracking.tracker import UsageTracker
 
 CUSTOM_MODEL = "claude-haiku-4-5-20251001"
@@ -296,7 +297,7 @@ def test_thinking_disabled_by_default(mock_print):
     assert "thinking" not in call_kwargs
 
 
-@patch("claude_conversation_engine.api.messages.urllib.request.urlopen")
+@patch("claude_conversation_engine.helpers.image_helper.urllib.request.urlopen")
 @patch("builtins.print")
 def test_send_with_image_url_fetches_and_encodes(mock_print, mock_urlopen):
     content = "What's in this image?"
@@ -389,8 +390,8 @@ def test_image_under_max_size_is_accepted():
     ImageHelper.build_content_block(image_data)  # should not raise
 
 
-@patch("claude_conversation_engine.api.messages.os.path.isfile", return_value=True)
-@patch("claude_conversation_engine.api.messages.ImageHelper.load_from_file")
+@patch("claude_conversation_engine.helpers.image_helper.os.path.isfile", return_value=True)
+@patch("claude_conversation_engine.helpers.image_helper.ImageHelper.load_from_file")
 @patch("builtins.print")
 def test_send_with_local_file_path(mock_print, mock_load, mock_isfile):
     content = "What's in this photo?"
