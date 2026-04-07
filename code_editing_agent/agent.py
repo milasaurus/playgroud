@@ -17,7 +17,7 @@ import anthropic
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from client import client
 from tool_definitions import (
-    Tool, ReadFileTool, ListFilesTool, EditFileTool,
+    Tool, ReadFileTool, ListFilesTool, EditFileTool, RunCommandTool,
 )
 
 
@@ -76,13 +76,10 @@ class Agent:
             message = self._run_inference(conversation)
             conversation.append({"role": "assistant", "content": message.content})
 
-            # Claude may return multiple tool_use blocks in a single response.
-            # Execute all of them and send results back together.
+            # Execute any tool_use blocks and send results back together.
             tool_results = []
             for block in message.content:
-                if block.type == "text":
-                    print(f"\033[93mClaude\033[0m: {block.text}")
-                elif block.type == "tool_use":
+                if block.type == "tool_use":
                     result = self._execute_tool(block.id, block.name, block.input)
                     tool_results.append(result)
 
@@ -96,13 +93,28 @@ class Agent:
             conversation.append({"role": "user", "content": tool_results})
 
     def _run_inference(self, conversation: list) -> anthropic.types.Message:
-        """Send the full conversation history to Claude and return the response."""
-        return self.client.messages.create(
+        """Stream the response, printing text tokens as they arrive."""
+        tool_dicts = [t.to_api_dict() for t in self.tools]
+        if tool_dicts:
+            tool_dicts[-1]["cache_control"] = {"type": "ephemeral"}
+
+        printed_prefix = False
+        with self.client.messages.stream(
             model=self.model,
             max_tokens=self.max_tokens,
-            tools=[t.to_api_dict() for t in self.tools],
+            tools=tool_dicts,
             messages=conversation,
-        )
+        ) as stream:
+            for text in stream.text_stream:
+                if not printed_prefix:
+                    print(f"\033[93mClaude\033[0m: ", end="", flush=True)
+                    printed_prefix = True
+                print(text, end="", flush=True)
+
+            if printed_prefix:
+                print()
+
+            return stream.get_final_message()
 
     def _execute_tool(self, tool_id: str, name: str, input: dict) -> dict:
         """Look up a tool by name, run it, and return a tool_result dict.
@@ -141,7 +153,7 @@ def main():
         except (EOFError, KeyboardInterrupt):
             return "", False
     # add new tools here
-    tools = [ReadFileTool(), ListFilesTool(), EditFileTool()]
+    tools = [ReadFileTool(), ListFilesTool(), EditFileTool(), RunCommandTool()]
     agent = Agent(client, get_user_message, tools)
     agent.run()
 
