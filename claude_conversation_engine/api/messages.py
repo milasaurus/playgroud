@@ -50,10 +50,17 @@ class MessageHandler:
 
         response_text = ""
 
+        active_system_prompt = system_prompt if system_prompt is not None else self.system_prompt
         api_params = {
             "model": self.model,
             "max_tokens": self.max_tokens,
-            "system": system_prompt if system_prompt is not None else self.system_prompt,
+            "system": [
+                {
+                    "type": "text",
+                    "text": active_system_prompt,
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
             "messages": self.history.get_messages(),
         }
 
