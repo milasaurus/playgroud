@@ -29,6 +29,18 @@ handler = MessageHandler(client, history, tracker, thinking=True, thinking_budge
 
 When enabled, a `[Thinking...]` indicator displays while Claude reasons, then the response streams normally. Thinking content blocks are stored in conversation history for multi-turn coherence.
 
+### Image Input
+
+Send images alongside text using a URL or raw base64 data:
+
+```python
+# From a URL
+handler.send("What's in this image?", image="https://example.com/photo.png")
+
+# From raw base64 data
+handler.send("Describe this", image={"media_type": "image/png", "data": "iVBORw0KGgo..."})
+```
+
 ### System Prompts
 
 Control Claude's behavior per conversation or per message:
@@ -174,4 +186,4 @@ make test-chat    # Run conversation engine tests only
 make test         # Run all tests across the repo
 ```
 
-18 tests covering history management, message handling, streaming, token tracking, system prompt overrides, extended thinking, and the interactive chat loop.
+21 tests covering history management, message handling, streaming, token tracking, system prompt overrides, extended thinking, image input, and the interactive chat loop.

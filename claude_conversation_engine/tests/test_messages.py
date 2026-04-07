@@ -1,8 +1,10 @@
+import base64
+import pytest
 from unittest.mock import MagicMock, patch
 from claude_conversation_engine.api.history import HistoryHandler, USER_ROLE, ASSISTANT_ROLE
 from claude_conversation_engine.api.messages import (
-    MessageHandler, DEFAULT_MODEL, DEFAULT_SYSTEM_PROMPT,
-    DEFAULT_MAX_TOKENS, DEFAULT_THINKING_BUDGET,
+    MessageHandler, ImageHelper, DEFAULT_MODEL, DEFAULT_SYSTEM_PROMPT,
+    DEFAULT_MAX_TOKENS, DEFAULT_THINKING_BUDGET, MAX_IMAGE_SIZE_BYTES,
 )
 from claude_conversation_engine.usage_tracking.tracker import UsageTracker
 
@@ -292,3 +294,122 @@ def test_thinking_disabled_by_default(mock_print):
 
     call_kwargs = mock_client.messages.stream.call_args.kwargs
     assert "thinking" not in call_kwargs
+
+
+@patch("claude_conversation_engine.api.messages.urllib.request.urlopen")
+@patch("builtins.print")
+def test_send_with_image_url_fetches_and_encodes(mock_print, mock_urlopen):
+    content = "What's in this image?"
+    expected = "I see a cat."
+    image_url = "https://example.com/cat.png"
+    fake_image_bytes = b"fake-image-data"
+    expected_b64 = base64.standard_b64encode(fake_image_bytes).decode("utf-8")
+
+    mock_response = MagicMock()
+    mock_response.read.return_value = fake_image_bytes
+    mock_response.headers.get.return_value = "image/png"
+    mock_response.__enter__ = MagicMock(return_value=mock_response)
+    mock_response.__exit__ = MagicMock(return_value=False)
+    mock_urlopen.return_value = mock_response
+
+    mock_client = make_mock_client(expected)
+
+    history = HistoryHandler()
+    tracker = UsageTracker()
+    handler = MessageHandler(mock_client, history, tracker)
+    result = handler.send(content, image=image_url)
+
+    assert result == expected
+    messages = history.get_messages()
+    image_block = messages[0]["content"][0]
+    assert image_block["source"]["type"] == "base64"
+    assert image_block["source"]["data"] == expected_b64
+    assert image_block["source"]["media_type"] == "image/png"
+
+
+@patch("builtins.print")
+def test_send_with_image_base64(mock_print):
+    content = "Describe this"
+    expected = "A landscape photo."
+    image_data = {"media_type": "image/png", "data": "iVBORw0KGgo="}
+    mock_client = make_mock_client(expected)
+
+    history = HistoryHandler()
+    tracker = UsageTracker()
+    handler = MessageHandler(mock_client, history, tracker)
+    result = handler.send(content, image=image_data)
+
+    assert result == expected
+    expected_user_content = [
+        {
+            "type": "image",
+            "source": {
+                "type": "base64",
+                "media_type": "image/png",
+                "data": "iVBORw0KGgo=",
+            },
+        },
+        {"type": "text", "text": content},
+    ]
+    messages = history.get_messages()
+    assert messages[0] == {"role": USER_ROLE, "content": expected_user_content}
+
+
+@patch("builtins.print")
+def test_send_without_image_stores_plain_string(mock_print):
+    content = "Hello"
+    expected = "Hi!"
+    mock_client = make_mock_client(expected)
+
+    history = HistoryHandler()
+    tracker = UsageTracker()
+    handler = MessageHandler(mock_client, history, tracker)
+    handler.send(content)
+
+    messages = history.get_messages()
+    assert messages[0] == {"role": USER_ROLE, "content": content}
+
+
+def test_image_exceeding_max_size_raises_error():
+    oversized_b64 = "A" * (MAX_IMAGE_SIZE_BYTES * 2)
+    image_data = {"media_type": "image/png", "data": oversized_b64}
+    mock_client = make_mock_client("response")
+
+    history = HistoryHandler()
+    tracker = UsageTracker()
+    handler = MessageHandler(mock_client, history, tracker)
+
+    with pytest.raises(ValueError, match="exceeds maximum size of 5MB"):
+        handler.send("Describe this", image=image_data)
+
+
+def test_image_under_max_size_is_accepted():
+    small_b64 = base64.standard_b64encode(b"small").decode("utf-8")
+    image_data = {"media_type": "image/png", "data": small_b64}
+    ImageHelper.build_content_block(image_data)  # should not raise
+
+
+@patch("claude_conversation_engine.api.messages.os.path.isfile", return_value=True)
+@patch("claude_conversation_engine.api.messages.ImageHelper.load_from_file")
+@patch("builtins.print")
+def test_send_with_local_file_path(mock_print, mock_load, mock_isfile):
+    content = "What's in this photo?"
+    expected = "A house."
+    fake_image_bytes = b"fake-png-data"
+    expected_b64 = base64.standard_b64encode(fake_image_bytes).decode("utf-8")
+
+    mock_load.return_value = (expected_b64, "image/png")
+
+    mock_client = make_mock_client(expected)
+
+    history = HistoryHandler()
+    tracker = UsageTracker()
+    handler = MessageHandler(mock_client, history, tracker)
+    result = handler.send(content, image="./photo.png")
+
+    assert result == expected
+    mock_load.assert_called_once_with("./photo.png")
+    messages = history.get_messages()
+    image_block = messages[0]["content"][0]
+    assert image_block["source"]["type"] == "base64"
+    assert image_block["source"]["data"] == expected_b64
