@@ -15,23 +15,31 @@ TOOL_RESPONSE = "echoed"
 
 
 class EchoTool(Tool):
-    """Test tool that returns a fixed string."""
-    name = TOOL_NAME
-    description = "echoes input"
-    input_schema = {"type": "object", "properties": {}}
+    def __init__(self):
+        super().__init__(
+            name=TOOL_NAME,
+            description="echoes input",
+            input_schema={"type": "object", "properties": {}},
+        )
 
     def run(self, params: dict) -> str:
         return TOOL_RESPONSE
 
 
 class FailingTool(Tool):
-    """Test tool that always raises."""
-    name = "fail"
-    description = "fails"
-    input_schema = {"type": "object", "properties": {}}
+    def __init__(self):
+        super().__init__(
+            name="fail",
+            description="fails",
+            input_schema={"type": "object", "properties": {}},
+        )
 
     def run(self, params: dict) -> str:
         raise RuntimeError("boom")
+
+
+echo_tool = EchoTool()
+failing_tool = FailingTool()
 
 
 def make_text_block(text):
@@ -50,12 +58,22 @@ def make_tool_use_block(name=TOOL_NAME, tool_id=TOOL_ID, tool_input=None):
     return block
 
 
+def make_stream(message, text_chunks=None):
+    """Create a mock stream context manager that yields text_chunks and returns message."""
+    stream = MagicMock()
+    stream.text_stream = iter(text_chunks or [])
+    stream.get_final_message.return_value = message
+    stream.__enter__ = lambda self: stream
+    stream.__exit__ = lambda self, *args: None
+    return stream
+
+
 # ── _execute_tool ────────────────────────────────────────────────────────────
 
 class TestExecuteTool:
     def setup_method(self):
         self.client = MagicMock()
-        self.agent = Agent(self.client, lambda: ("", False), [EchoTool()])
+        self.agent = Agent(self.client, lambda: ("", False), [echo_tool])
 
     def test_executes_known_tool(self):
         result = self.agent._execute_tool(TOOL_ID, TOOL_NAME, {})
@@ -69,7 +87,7 @@ class TestExecuteTool:
         assert result["content"] == "tool not found"
 
     def test_returns_error_on_tool_exception(self):
-        agent = Agent(self.client, lambda: ("", False), [FailingTool()])
+        agent = Agent(self.client, lambda: ("", False), [failing_tool])
         result = agent._execute_tool(TOOL_ID, "fail", {})
         assert result["is_error"] is True
         assert "boom" in result["content"]
@@ -89,7 +107,8 @@ class TestRunLoop:
         client = MagicMock()
         message = MagicMock()
         message.content = [make_text_block("hi there")]
-        client.messages.create.return_value = message
+        message.stop_reason = "end_turn"
+        client.messages.stream.return_value = make_stream(message, text_chunks=["hi ", "there"])
 
         call_count = 0
         def get_message():
@@ -114,7 +133,10 @@ class TestRunLoop:
         text_message.content = [make_text_block("done")]
         text_message.stop_reason = "end_turn"
 
-        client.messages.create.side_effect = [tool_message, text_message]
+        client.messages.stream.side_effect = [
+            make_stream(tool_message),
+            make_stream(text_message, text_chunks=["done"]),
+        ]
 
         call_count = 0
         def get_message():
@@ -124,7 +146,7 @@ class TestRunLoop:
                 return "do something", True
             return "", False
 
-        agent = Agent(client, get_message, [EchoTool()])
+        agent = Agent(client, get_message, [echo_tool])
         agent.run()
         output = capsys.readouterr().out
         assert TOOL_NAME in output
@@ -144,7 +166,10 @@ class TestRunLoop:
         text_message.content = [make_text_block("both done")]
         text_message.stop_reason = "end_turn"
 
-        client.messages.create.side_effect = [tool_message, text_message]
+        client.messages.stream.side_effect = [
+            make_stream(tool_message),
+            make_stream(text_message, text_chunks=["both done"]),
+        ]
 
         call_count = 0
         def get_message():
@@ -154,11 +179,11 @@ class TestRunLoop:
                 return "do two things", True
             return "", False
 
-        agent = Agent(client, get_message, [EchoTool()])
+        agent = Agent(client, get_message, [echo_tool])
         agent.run()
 
         # Both tool results sent back in one message (second-to-last, before assistant)
-        second_call_args = client.messages.create.call_args_list[1]
+        second_call_args = client.messages.stream.call_args_list[1]
         tool_result_msg = second_call_args.kwargs["messages"][-2]
         assert tool_result_msg["role"] == "user"
         assert len(tool_result_msg["content"]) == 2
@@ -181,7 +206,11 @@ class TestRunLoop:
         final_text.content = [make_text_block("all done")]
         final_text.stop_reason = "end_turn"
 
-        client.messages.create.side_effect = [first_tool, second_tool, final_text]
+        client.messages.stream.side_effect = [
+            make_stream(first_tool),
+            make_stream(second_tool),
+            make_stream(final_text, text_chunks=["all done"]),
+        ]
 
         call_count = 0
         def get_message():
@@ -191,11 +220,11 @@ class TestRunLoop:
                 return "multi step task", True
             return "", False
 
-        agent = Agent(client, get_message, [EchoTool()])
+        agent = Agent(client, get_message, [echo_tool])
         agent.run()
 
         # Three API calls: first tool, second tool, final text
-        assert client.messages.create.call_count == 3
+        assert client.messages.stream.call_count == 3
         output = capsys.readouterr().out
         assert "all done" in output
 
@@ -205,7 +234,7 @@ class TestRunLoop:
         message = MagicMock()
         message.content = [make_text_block("just text")]
         message.stop_reason = "end_turn"
-        client.messages.create.return_value = message
+        client.messages.stream.return_value = make_stream(message, text_chunks=["just text"])
 
         call_count = 0
         def get_message():
@@ -219,4 +248,4 @@ class TestRunLoop:
         agent.run()
 
         # Only one API call -- no tool loop
-        assert client.messages.create.call_count == 1
+        assert client.messages.stream.call_count == 1

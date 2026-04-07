@@ -28,23 +28,20 @@ Python code-editing agent built with the Anthropic Python SDK. Learning project:
 
 1. Read user input from stdin
 2. Append to conversation history
-3. Call `client.messages.create()` with tools
+3. Call `client.messages.stream()` with tools — text tokens print progressively
 4. If response contains `tool_use` blocks, execute each tool and send results back
 5. Repeat until Claude responds with text only (no more tool calls)
-6. Print response, prompt for next user input
+6. Prompt for next user input
 
 ### Key classes
 
-- `Tool` (tool_definitions.py) -- abstract base class; subclasses define `name`, `description`, `input_schema`, and implement `run(params) -> str`
-- `ReadFileTool`, `ListFilesTool`, `EditFileTool` -- concrete tool implementations
+- `Tool` (tool_definitions.py) -- ABC with name, description, input_schema, and abstract `run()` method. Subclass to add new tools.
 - `Agent` (agent.py) -- holds client, tools, and conversation loop logic; model and max_tokens are configurable
 
 ### Adding a new tool
 
-1. Subclass `Tool` in `tool_definitions.py`
-2. Define `name`, `description`, `input_schema` as class attributes
-3. Implement `run(params) -> str`
-4. Add an instance to the tools list in `main()`
+1. Subclass `Tool` in `tool_definitions.py` and implement `run(self, params: dict) -> str`
+2. Instantiate it and add to the tools list in `main()`
 
 ## Conventions
 
@@ -56,6 +53,4 @@ Python code-editing agent built with the Anthropic Python SDK. Learning project:
 ## What to work on next
 
 - Add a system prompt to give the agent a persona / set of instructions
-- Add more tools: `run_command`, `search_files` (grep), `web_fetch`
-- Streaming responses so long outputs print progressively
-- Token usage tracking / context window management
+- Add more tools: `search_files` (grep), `web_fetch`
